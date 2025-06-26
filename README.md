@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Parcel Info Extractor (Django)
 
 A Django web application for extracting parcel label information using Typhoon OCR and OpenAI.
@@ -29,3 +30,6 @@ A Django web application for extracting parcel label information using Typhoon O
 
 ## Notes
 - Place your Typhoon OCR and OpenAI API keys in environment variables or Django settings as needed.
+=======
+# Extract-Parcel-Info
+>>>>>>> b576470c417f5c6ab251ccdf955dd0abbc599c83
