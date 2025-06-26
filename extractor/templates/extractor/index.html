@@ -1,0 +1,176 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสกัดข้อมูลใบปะหน้าพัสดุ (Extract Parcel Info)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(120deg, #f0f4ff 0%, #e0e7ff 100%);
+            min-height: 100vh;
+        }
+        .main-card {
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px rgba(99,102,241,0.10);
+            background: #fff;
+            padding: 2.5rem 2rem 2rem 2rem;
+            margin-top: 3vh;
+        }
+        .brand-icon {
+            background: linear-gradient(135deg,#6366f1 60%,#60a5fa 100%);
+            border-radius: 1.5rem;
+            padding: 18px 22px 14px 22px;
+            display: inline-block;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.10);
+        }
+        .brand-icon i {
+            font-size: 3rem;
+            color: #fff;
+        }
+        .custom-btn {
+            background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+            color: #fff;
+            border: none;
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+        .custom-btn:hover {
+            background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
+        }
+        .dropzone {
+            border: 2px dashed #6366f1;
+            border-radius: 1rem;
+            background: #f8fafc;
+            padding: 2.2rem 1rem;
+            text-align: center;
+            color: #6366f1;
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+            transition: background 0.2s, border 0.2s;
+        }
+        .dropzone.dragover {
+            background: #e0e7ff;
+            border-color: #60a5fa;
+        }
+        .table th {
+            width: 200px;
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+        .table td {
+            background: #fff;
+        }
+        .result-icon {
+            font-size: 1.3rem;
+            color: #6366f1;
+            margin-right: 0.5rem;
+        }
+        .success-icon {
+            color: #22c55e;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        @media (max-width: 600px) {
+            .main-card { padding: 1.2rem 0.3rem; }
+            .table th { width: 120px; font-size: 0.98rem; }
+        }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var dropzone = document.getElementById('dropzone');
+        if(dropzone) {
+            dropzone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+            dropzone.addEventListener('dragleave', function(e) {
+                dropzone.classList.remove('dragover');
+            });
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+                var files = e.dataTransfer.files;
+                document.getElementById('id_file').files = files;
+            });
+        }
+    });
+    </script>
+</head>
+<body>
+<div class="container d-flex flex-column justify-content-center align-items-center" style="min-height:100vh;">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="main-card fade-in">
+            <div class="text-center mb-4">
+                <span class="brand-icon"><i class="bi bi-box-seam"></i></span>
+                <h1 class="fw-bold mt-3 mb-2" style="color:#6366f1;letter-spacing:0.5px;font-size:2.1rem;">
+                    ระบบสกัดข้อมูลใบปะหน้าพัสดุ (Extract Parcel Info)
+                </h1>
+                <div class="text-secondary mb-2" style="font-size:1.08rem;">อัปโหลดรูปภาพหรือไฟล์ใบปะหน้าพัสดุ<br>ระบบจะสกัดข้อมูลสำคัญและให้ดาวน์โหลดเป็น <span class="badge bg-success bg-opacity-75">Excel</span></div>
+                <a href="/history/" class="btn btn-outline-secondary mt-2"><i class="bi bi-clock-history"></i> ดูประวัติการสกัดข้อมูล</a>
+            </div>
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-success fade-in">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            <form method="post" enctype="multipart/form-data" class="mb-3">
+                {% csrf_token %}
+                <div id="dropzone" class="dropzone mb-3">
+                    <i class="bi bi-cloud-arrow-up" style="font-size:2rem;"></i><br>
+                    ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์
+                    {{ form.file }}
+                </div>
+                <button class="btn custom-btn w-100 py-2" type="submit"><i class="bi bi-upload"></i> อัปโหลด & สกัดข้อมูล</button>
+            </form>
+            {% if warning %}
+            <div class="alert alert-warning mt-2 fade-in">{{ warning }}</div>
+            {% endif %}
+            {% if error %}
+            <div class="alert alert-danger mt-2 fade-in">{{ error }}</div>
+            {% endif %}
+            {% if result and not error %}
+            <div class="mt-4 fade-in">
+                <div class="text-center">
+                    <i class="bi bi-patch-check-fill success-icon"></i>
+                    <h5 class="fw-bold mb-3" style="color:#6366f1;">ข้อมูลที่สกัดได้</h5>
+                </div>
+                <table class="table table-bordered rounded-3 overflow-hidden">
+                    <tr><th><i class="bi bi-upc-scan result-icon"></i>หมายเลขพัสดุ</th>
+                        <td>{% if result.parcel_number == '-' %}<span class="text-warning">ไม่พบข้อมูล</span>{% else %}{{ result.parcel_number }}{% endif %}</td></tr>
+                    <tr><th><i class="bi bi-person result-icon"></i>ชื่อผู้รับ</th>
+                        <td>{% if result.recipient_name == '-' %}<span class="text-warning">ไม่พบข้อมูล</span>{% else %}{{ result.recipient_name }}{% endif %}</td></tr>
+                    <tr><th><i class="bi bi-geo-alt result-icon"></i>ที่อยู่ผู้รับ</th>
+                        <td>{% if result.recipient_address == '-' %}<span class="text-warning">ไม่พบข้อมูล</span>{% else %}{{ result.recipient_address }}{% endif %}</td></tr>
+                    <tr><th><i class="bi bi-telephone result-icon"></i>เบอร์โทรศัพท์ผู้รับ</th>
+                        <td>{% if result.recipient_phone == '-' %}<span class="text-warning">ไม่พบข้อมูล</span>{% else %}{{ result.recipient_phone }}{% endif %}</td></tr>
+                    <tr><th><i class="bi bi-mailbox result-icon"></i>รหัสไปรษณีย์ผู้รับ</th>
+                        <td>{% if result.recipient_postal_code == '-' %}<span class="text-warning">ไม่พบข้อมูล</span>{% else %}{{ result.recipient_postal_code }}{% endif %}</td></tr>
+                </table>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="save" value="1">
+                    <button class="btn btn-primary w-100 mt-2" type="submit">
+                        <i class="bi bi-save"></i> บันทึกข้อมูลลงฐานข้อมูล
+                    </button>
+                </form>
+                {% if saved %}
+                <div class="alert alert-success mt-2 fade-in">บันทึกข้อมูลเรียบร้อยแล้ว</div>
+                {% endif %}
+                {% if excel_url and filename %}
+                <a class="btn btn-success w-100 mt-2" href="{% url 'download_excel' filename=filename %}">
+                    <i class="bi bi-file-earmark-excel"></i> ดาวน์โหลดเป็น Excel
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-4 text-secondary small">
+            &copy; 2025 Parcel Info Extractor | Powered by Typhoon OCR & OpenAI
+        </div>
+    </div>
+</div>
+</body>
+</html>
